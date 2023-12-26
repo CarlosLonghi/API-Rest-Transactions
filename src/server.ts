@@ -1,5 +1,6 @@
 import fastify from 'fastify'
 import { knex } from './database'
+import { env } from './env'
 
 const app = fastify()
 
@@ -15,11 +16,10 @@ app.get('/hello', async () => {
   return transaction
 })
 
-const listenPort = 3333
 app
   .listen({
-    port: listenPort,
+    port: env.PORT,
   })
   .then(() => {
-    console.log(`HTTP Server is Running on Port: ${listenPort}`)
+    console.log(`HTTP Server is Running on Port: ${env.PORT}`)
   })
