@@ -5,7 +5,9 @@ import { transactionsRoutes } from './routes/transactions'
 const app = fastify()
 
 // Plugins
-app.register(transactionsRoutes)
+app.register(transactionsRoutes, {
+  prefix: 'transactions',
+})
 
 app
   .listen({
