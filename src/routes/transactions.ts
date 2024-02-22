@@ -2,33 +2,61 @@ import { FastifyInstance } from 'fastify'
 import { knex } from '../database'
 import { z } from 'zod'
 import { randomUUID } from 'node:crypto'
+import { checkSessionIdExist } from '../middlewares/check-session-id-exist'
 
 // Todo plugin do Fastify precisa obrigatoriamente ser uma função assíncrona.
 export async function transactionsRoutes(app: FastifyInstance) {
-  app.get('/', async () => {
-    const transactions = await knex('transactions').select()
+  app.get(
+    '/',
+    {
+      preHandler: [checkSessionIdExist],
+    },
+    async (request) => {
+      const { sessionId } = request.cookies
 
-    return { transactions }
-  })
+      const transactions = await knex('transactions')
+        .where('session_id', sessionId)
+        .select()
 
-  app.get('/:id', async (request) => {
-    const getTransactionParamsSchema = z.object({
-      id: z.string().uuid(),
-    })
+      return { transactions }
+    },
+  )
 
-    const { id } = getTransactionParamsSchema.parse(request.params)
+  app.get(
+    '/:id',
+    {
+      preHandler: [checkSessionIdExist],
+    },
+    async (request) => {
+      const getTransactionParamsSchema = z.object({
+        id: z.string().uuid(),
+      })
+      const { sessionId } = request.cookies
+      const { id } = getTransactionParamsSchema.parse(request.params)
 
-    const transactions = await knex('transactions').where('id', id).first()
+      const transactions = await knex('transactions')
+        .where({ session_id: sessionId, id })
+        .first()
 
-    return { transactions }
-  })
+      return { transactions }
+    },
+  )
 
-  app.get('/summary', async () => {
-    const summary = await knex('transactions')
-      .sum('amount', { as: 'amount' })
-      .first()
-    return { summary }
-  })
+  app.get(
+    '/summary',
+    {
+      preHandler: [checkSessionIdExist],
+    },
+    async (request) => {
+      const { sessionId } = request.cookies
+
+      const summary = await knex('transactions')
+        .where('session_id', sessionId)
+        .sum('amount', { as: 'amount' })
+        .first()
+      return { summary }
+    },
+  )
 
   app.post('/', async (request, reply) => {
     const createTransactionBodySchema = z.object({
