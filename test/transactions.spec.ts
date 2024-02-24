@@ -1,6 +1,7 @@
-import { expect, it, beforeAll, afterAll, describe } from 'vitest'
-import request from 'supertest'
+import { execSync } from 'node:child_process'
 import { app } from '../src/app'
+import { expect, it, beforeAll, afterAll, describe, beforeEach } from 'vitest'
+import request from 'supertest'
 
 describe('Transactions routes', () => {
   // Await app is ready to run tests
@@ -11,6 +12,11 @@ describe('Transactions routes', () => {
   // Close app after run tests
   afterAll(async () => {
     await app.close()
+  })
+
+  beforeEach(() => {
+    execSync('npm run knex migrate:rollback --all')
+    execSync('npm run knex migrate:latest')
   })
 
   // Um teste NÃO pode depender de outro teste!
