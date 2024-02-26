@@ -11,7 +11,7 @@
 
 - Comando para execultar a API
 ```bash
-    npm run run dev
+    npm run dev
 ```
 
 # RF (Requisitos Funcionais)
